@@ -27,7 +27,7 @@ GAME_UNITS = 40
 DISPLAY = None
 
 class Players():
-    def __init__(self, snake_size, num_players, display, window_width=640, window_height=480, game_units=40):
+    def __init__(self, snake_size, num_players, display, s_starts, window_width=640, window_height=480, game_units=40):
         ''' define array list of new Snake objects '''
         global WINDOW_WIDTH
         global WINDOW_HEIGHT
@@ -42,8 +42,8 @@ class Players():
         self._index = 0
         self.num_players = num_players
 
-        self.players = [Snake(snake_size, player_id)
-                        for player_id in range(num_players)]
+        self.players = [Snake(snake_size, player_id, s_starts[i])
+                        for i, player_id in enumerate(range(num_players))]
 
     def __iter__(self):
         return iter(self.players)
@@ -85,9 +85,10 @@ class Players():
             player.draw()
 
 class Snake():
-    def __init__(self, initial_size, player_id):
+    def __init__(self, initial_size, player_id, start):
         ''' define initial size (length), direction, and position '''
         self.player_id = player_id
+        self.start = start
         self.size = initial_size
         self.direction = None
         self.head = None
@@ -99,12 +100,16 @@ class Snake():
         self.score.reset()
         self.deficit = 0
         self.direction = Direction.RIGHT.value
-        x = randint(0, (WINDOW_WIDTH-GAME_UNITS )//GAME_UNITS )*GAME_UNITS 
-        y = randint(0, (WINDOW_HEIGHT-GAME_UNITS )//GAME_UNITS )*GAME_UNITS
+        if self.start == None:
+            x = randint(0, (WINDOW_WIDTH-GAME_UNITS )//GAME_UNITS )*GAME_UNITS 
+            y = randint(0, (WINDOW_HEIGHT-GAME_UNITS )//GAME_UNITS )*GAME_UNITS
+        else:
+            x = self.start[0]
+            y = self.start[1]
         self.head = Point(x,y)
         self.snake = [self.head]
         for seg in range(self.size-1):
-      	    self.snake.append(Point(self.head.x-(seg*GAME_UNITS), self.head.y))
+      	    self.snake.append(Point(self.head.x-((seg+1)*GAME_UNITS), self.head.y))
 
     def move(self):
         ''' update snake coordinates by inserting new head '''

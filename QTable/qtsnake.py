@@ -70,7 +70,7 @@ class QSnake:
             rewards[best_action] = float("inf")
             yield best_action
 
-    def pick_greedy_action(self, q, pid, epsilon):
+    def pick_greedy_action(self, q, pid, epsilon=0):
         '''
         given a q table, the id of the player
         taking action, and a randomization factor,

@@ -27,9 +27,10 @@ class Playfield:
         self._units = units
         self._window_width = window_width
         self._window_height = window_height
-        self._player_count = -1   			# number of registered players
+        self._player_count = -1   			 # number of registered players
+        self._player_starts = []                         # starting player positions
         ''' for human feedback '''
-        self._game_state = False                          # false is game over
+        self._game_state = False                         # false is game over
         self._draw_on = True
         self._clock = pg.time.Clock()
 
@@ -37,16 +38,17 @@ class Playfield:
         pg.init()
         self.display = pg.display.set_mode(
             [self._window_width, self._window_height],
-            pg.HWSURFACE)             			# display object (see explanation in engine.org)
+            pg.HWSURFACE)              			 # display object (see explanation in engine.org)
         self._players = None
         self._goal = None
 
-    def add_player(self):
+    def add_player(self, s_start=None):
         '''
         Returns the player's number to the callee.
         If the player count is over four, returns None
         '''
         if self._player_count < 4 or self._game_state == True:
+            self._player_starts.append(s_start)
             self._player_count += 1
             return self._player_count
         return None
@@ -68,12 +70,13 @@ class Playfield:
         not result in immediate death
         '''
         head = self._players.players[player_id].head
-        tail = self._players.players[player_id].snake
+        # tail = self._players.players[player_id].snake
+        tail = self._get_player_bodies()
         danger_array = np.array([
-            head.y-self._units <  0                   or PlayersCollection.Point(head.x, head.y-self._units) in tail[1:], # up
-            head.x+self._units >= self._window_width  or PlayersCollection.Point(head.x+self._units, head.y) in tail[1:], # right
-            head.y+self._units >= self._window_height or PlayersCollection.Point(head.x, head.y+self._units) in tail[1:], # down
-            head.x-self._units < 0                    or PlayersCollection.Point(head.x-self._units, head.y) in tail[1:], # left
+            head.y-self._units <  0                   or PlayersCollection.Point(head.x, head.y-self._units) in tail, # up
+            head.x+self._units >= self._window_width  or PlayersCollection.Point(head.x+self._units, head.y) in tail, # right
+            head.y+self._units >= self._window_height or PlayersCollection.Point(head.x, head.y+self._units) in tail, # down
+            head.x-self._units < 0                    or PlayersCollection.Point(head.x-self._units, head.y) in tail, # left
         ])
 
         return np.where(danger_array == False)[0]
@@ -82,8 +85,8 @@ class Playfield:
         '''
         Initializes player objects, starts the game
         '''
-        self._players = PlayersCollection.Players(self._s_size, self._player_count+1, self.display, game_units=self._units)
-        self._goal = GoalCollection.Goal(self.display, game_units=self._units)
+        self._players = PlayersCollection.Players(self._s_size, self._player_count+1, self.display, self._player_starts, window_width=self._window_width, window_height=self._window_height, game_units=self._units)
+        self._goal = GoalCollection.Goal(self.display, self._window_width, self._window_height, game_units=self._units)
         self._reset()
         print(f'Game starting with {self._player_count+1} players.')
 
@@ -104,7 +107,7 @@ class Playfield:
         ''' update game state             '''
 
         for player_id, action in enumerate(actions):
-            if np.random.uniform < noise:
+            if np.random.uniform() < noise:
                 # random action (noise)
                 random_choice = [0, 1, 2, 3]
                 random_choice.remove(self._players[player_id].direction)
@@ -128,6 +131,7 @@ class Playfield:
         for player in self._players:
             ''' determine what obstacle was hit '''
             hazards = self._get_player_bodies()
+            hazards.insert(0, 0)			# FIXME (why is this required?)
             hazards.remove(player.head)
             if (player.head in hazards or player.in_wall()):
                 self._players.reward_killer(player)
@@ -148,7 +152,7 @@ class Playfield:
 
     def _get_player_bodies(self):
         ''' return an array of all tail coordinates '''
-        tails = [0]
+        tails = []
         for player in self._players:
             tails += player.snake
         return tails
