@@ -6,9 +6,11 @@ import matplotlib.patches as pltpatch  # for Arc
 import matplotlib.collections as pltcoll
 import math
 
-######################################################################
-## class NeuralNetwork()
-######################################################################
+###############################################
+# Thanks to Dr. Chuck Anderson for his neural #
+# network with optimizers implementation      #
+# https://www.cs.colostate.edu/~anderson/wp/  #
+###############################################
 
 class NeuralNetwork():
 

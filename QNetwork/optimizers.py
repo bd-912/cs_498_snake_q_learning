@@ -1,8 +1,10 @@
 import numpy as np
 
-######################################################################
-## class Optimizers()
-######################################################################
+###############################################
+# Thanks to Dr. Chuck Anderson for his neural #
+# network with optimizers implementation      #
+# https://www.cs.colostate.edu/~anderson/wp/  #
+###############################################
 
 class Optimizers():
 
